@@ -1,0 +1,127 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chúc Mừng Sinh Nhật!</title>
+    <style>
+        /* Đảm bảo canvas chiếm toàn bộ màn hình và không có viền */
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #000; /* Nền đen giống video */
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="birthdayCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('birthdayCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // 1. Thiết lập kích thước canvas
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // Xử lý khi thay đổi kích thước cửa sổ
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // 2. Danh sách các "hạt" sẽ bay lên
+        // Bạn có thể thêm hoặc bớt các từ và biểu tượng ở đây
+        const particleWords = ["Chúc", "Mừng", "Sinh", "Nhật", "❤️", "♡", "🎉", "🎂"];
+        let particles = [];
+
+        // 3. Lớp (Class) định nghĩa cho mỗi "hạt"
+        class Particle {
+            constructor() {
+                // Vị trí bắt đầu (ngẫu nhiên ở đáy màn hình)
+                this.x = Math.random() * canvas.width;
+                this.y = canvas.height + Math.random() * 50; // Bắt đầu từ ngay dưới đáy
+                
+                // Tốc độ di chuyển
+                this.speedY = - (Math.random() * 2 + 1); // Tốc độ bay lên (luôn âm)
+                this.speedX = (Math.random() - 0.5) * 1; // Tốc độ bay ngang (lắc lư)
+
+                // Kích thước và nội dung
+                this.text = particleWords[Math.floor(Math.random() * particleWords.length)];
+                this.size = Math.random() * 15 + 10; // Kích thước chữ/biểu tượng
+                
+                // Độ mờ (bắt đầu rõ, mờ dần)
+                this.opacity = 1;
+                this.fadeRate = 0.005 + (Math.random() * 0.01); // Tốc độ mờ
+            }
+
+            // Cập nhật vị trí và độ mờ
+            update() {
+                this.y += this.speedY;
+                this.x += this.speedX;
+                this.opacity -= this.fadeRate;
+            }
+
+            // Vẽ "hạt" lên canvas
+            draw() {
+                ctx.save(); // Lưu trạng thái canvas
+                
+                // Tạo hiệu ứng phát sáng (giống video)
+                ctx.shadowColor = '#fff';
+                ctx.shadowBlur = 15;
+                
+                // Thiết lập font và màu chữ
+                ctx.font = `${this.size}px Arial`;
+                // Màu trắng, mờ dần theo this.opacity
+                ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                
+                ctx.fillText(this.text, this.x, this.y);
+                
+                ctx.restore(); // Phục hồi trạng thái canvas
+            }
+        }
+
+        // 4. Vòng lặp Animation chính
+        function animate() {
+            // Xóa màn hình với một lớp màu đen hơi trong suốt
+            // (Tạo hiệu ứng vệt mờ nhẹ)
+            // Nếu muốn rõ nét, dùng: ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Cập nhật và vẽ từng "hạt"
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.update();
+                p.draw();
+
+                // Nếu "hạt" đã mờ hết hoặc bay ra khỏi màn hình, xóa nó đi
+                if (p.opacity <= 0 || p.y < -20) {
+                    particles.splice(i, 1);
+                }
+            }
+
+            // Yêu cầu trình duyệt vẽ khung hình tiếp theo
+            requestAnimationFrame(animate);
+        }
+
+        // 5. Liên tục tạo "hạt" mới
+        // Cứ mỗi 150ms (khoảng 0.15 giây) sẽ tạo 1-2 hạt mới
+        setInterval(() => {
+            const count = Math.random() * 2 + 1; // Tạo 1 hoặc 2 hạt
+            for(let i=0; i < count; i++) {
+                particles.push(new Particle());
+            }
+        }, 150);
+
+        // Bắt đầu vòng lặp
+        animate();
+
+    </script>
+</body>
+</html>
